@@ -1,5 +1,6 @@
 [build]
-  command = "npm install && npm run build"
+  base = "/"
+  command = "ls -la && npm install && npm run build"
   publish = "build"
 
 [build.environment]
