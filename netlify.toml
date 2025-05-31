@@ -1,6 +1,6 @@
 [build]
-  base = "."
-  command = "npm install && CI=false npm run build"
+  base = ""
+  command = "CI=false npm install && npm run build"
   publish = "build"
 
 [build.environment]
