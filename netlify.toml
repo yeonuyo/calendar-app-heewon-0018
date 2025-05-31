@@ -1,9 +1,10 @@
 [build]
-  base = ""
-  command = "ls -la && npm install && CI=false npm run build"
+  base = "/"
+  command = "pwd && ls -la && CI=false npm install && npm run build"
   publish = "build"
 
 [build.environment]
   NODE_VERSION = "18.19.1"
   CI = "false"
-  RUBY_VERSION = "0" 
+  RUBY_VERSION = "0"
+  NPM_FLAGS = "--no-package-lock" 
