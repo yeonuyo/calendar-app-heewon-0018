@@ -2,7 +2,7 @@
   "name": "academic-calendar",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://tlqnstjf06010014.github.io/academic-calendar",
+  "homepage": ".",
   "dependencies": {
     "date-fns": "^2.30.0",
     "react": "^18.2.0",

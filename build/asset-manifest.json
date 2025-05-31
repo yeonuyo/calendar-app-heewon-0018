@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/academic-calendar/static/css/main.8b424f19.css",
-    "main.js": "/academic-calendar/static/js/main.ce9adf0d.js",
-    "index.html": "/academic-calendar/index.html",
-    "main.8b424f19.css.map": "/academic-calendar/static/css/main.8b424f19.css.map",
-    "main.ce9adf0d.js.map": "/academic-calendar/static/js/main.ce9adf0d.js.map"
+    "main.css": "./static/css/main.8b424f19.css",
+    "main.js": "./static/js/main.ce9adf0d.js",
+    "index.html": "./index.html",
+    "main.8b424f19.css.map": "./static/css/main.8b424f19.css.map",
+    "main.ce9adf0d.js.map": "./static/js/main.ce9adf0d.js.map"
   },
   "entrypoints": [
     "static/css/main.8b424f19.css",
