@@ -1,9 +1,7 @@
 [build]
-  base = "."
-  command = "ls -la && npm config set package-json ./package.json && npm install --legacy-peer-deps && CI=false npm run build"
+  command = "npm install && npm run build"
   publish = "build"
 
 [build.environment]
   NODE_VERSION = "18.19.1"
-  CI = "false"
-  NPM_CONFIG_PACKAGE_JSON = "./package.json" 
+  CI = "false" 
