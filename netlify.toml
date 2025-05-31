@@ -1,6 +1,8 @@
 [build]
-  command = "CI=false npm ci && npm run build"
+  base = "./"
+  command = "npm install && npm run build"
   publish = "build"
 
 [build.environment]
-  NODE_VERSION = "18.19.1" 
+  NODE_VERSION = "18.19.1"
+  CI = "false" 
