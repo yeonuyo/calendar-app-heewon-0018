@@ -1,8 +1,9 @@
 [build]
-  base = "/"
-  command = "ls -la && npm install && npm run build"
+  base = "."
+  command = "pwd && ls -la && npm install --production=false && CI=false npm run build"
   publish = "build"
 
 [build.environment]
   NODE_VERSION = "18.19.1"
-  CI = "false" 
+  CI = "false"
+  NPM_CONFIG_PACKAGE_JSON = "./package.json" 
