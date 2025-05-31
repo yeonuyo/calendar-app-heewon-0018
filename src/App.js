@@ -3,7 +3,7 @@ import Calendar from './components/Calendar';
 import EventList from './components/EventList';
 import EventForm from './components/EventForm';
 import Chatbot from './components/Chatbot';
-import { format, isSameDay, isToday, addDays } from 'date-fns';
+import { isSameDay, isToday, addDays } from 'date-fns';
 import './App.css';
 
 function App() {
