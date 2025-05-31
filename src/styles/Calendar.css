@@ -1,0 +1,131 @@
+.calendar {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-right: 1rem;
+  flex: 2;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-header button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.calendar-header button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.5rem;
+}
+
+.day-name {
+  text-align: center;
+  font-weight: 500;
+  color: #666;
+  padding: 0.5rem;
+}
+
+.calendar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.calendar-cell:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.calendar-cell.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.calendar-cell.disabled:hover {
+  background: #f8f9fa;
+  transform: none;
+}
+
+.calendar-cell.selected {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+}
+
+.day-number {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.event-dots {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 1px;
+  transition: transform 0.2s;
+}
+
+.event-dot:hover {
+  transform: scale(1.5);
+}
+
+.more-events {
+  font-size: 10px;
+  color: #6c757d;
+  margin-left: 2px;
+}
+
+@media (max-width: 768px) {
+  .calendar-cell {
+    height: 70px;
+  }
+}
