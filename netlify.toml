@@ -1,9 +1,9 @@
 [build]
-  base = ""
-  command = "dir && npm install --legacy-peer-deps && CI=false npm run build"
+  base = "."
+  command = "pwd && ls -la && npm install --legacy-peer-deps && CI=false npm run build"
   publish = "build"
 
 [build.environment]
   NODE_VERSION = "18.19.1"
   CI = "false"
-  NPM_FLAGS = "--legacy-peer-deps" 
+  NPM_FLAGS = "--legacy-peer-deps --no-package-lock" 
