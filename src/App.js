@@ -12,6 +12,85 @@ function App() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [activeTab, setActiveTab] = useState('events'); // 'events' 또는 'chatbot'
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/.netlify/functions/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'login',
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setIsLoggedIn(true);
+        setShowLoginForm(false);
+        setEmail('');
+        setPassword('');
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('로그인에 실패했습니다.');
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/.netlify/functions/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'register',
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('회원가입이 완료되었습니다. 로그인해주세요.');
+        setShowRegisterForm(false);
+        setShowLoginForm(true);
+        setEmail('');
+        setPassword('');
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('회원가입에 실패했습니다.');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
 
   // 로컬 스토리지에서 이벤트 불러오기
   useEffect(() => {
@@ -130,71 +209,136 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>학사일정 및 과제 관리 캘린더</h1>
-      </header>
-      <main className="app-main">
-        <Calendar 
-          events={events} 
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          onAddEvent={() => {
-            setEditingEvent(null);
-            setShowEventForm(true);
-          }}
-        />
-        <div className="sidebar">
-          <div className="tab-navigation">
-            <button 
-              className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
-              onClick={() => setActiveTab('events')}
-            >
-              일정 목록
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'chatbot' ? 'active' : ''}`}
-              onClick={() => setActiveTab('chatbot')}
-            >
-              챗봇
-            </button>
-          </div>
-
-          {activeTab === 'events' ? (
+        <div className="auth-buttons">
+          {!isLoggedIn ? (
             <>
-              <EventList 
-                events={events.filter(event => {
-                  const eventDate = new Date(event.date);
-                  return isSameDay(eventDate, selectedDate);
-                })}
-                onDelete={deleteEvent}
-                onEdit={editEvent}
-              />
-              {showEventForm && (
-                <EventForm 
-                  selectedDate={selectedDate}
-                  onSave={addEvent}
-                  onCancel={() => {
-                    setShowEventForm(false);
-                    setEditingEvent(null);
-                  }}
-                  event={editingEvent}
-                />
-              )}
-              {!showEventForm && (
-                <button 
-                  className="add-event-button"
-                  onClick={() => {
-                    setEditingEvent(null);
-                    setShowEventForm(true);
-                  }}
-                >
-                  일정 추가하기
-                </button>
-              )}
+              <button onClick={() => {
+                setShowLoginForm(true);
+                setShowRegisterForm(false);
+              }}>로그인</button>
+              <button onClick={() => {
+                setShowRegisterForm(true);
+                setShowLoginForm(false);
+              }}>회원가입</button>
             </>
           ) : (
-            <Chatbot onSave={addEvent} />
+            <button onClick={handleLogout}>로그아웃</button>
           )}
         </div>
-      </main>
+      </header>
+
+      {showLoginForm && !isLoggedIn && (
+        <div className="auth-form">
+          <h2>로그인</h2>
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit">로그인</button>
+          </form>
+        </div>
+      )}
+
+      {showRegisterForm && !isLoggedIn && (
+        <div className="auth-form">
+          <h2>회원가입</h2>
+          <form onSubmit={handleRegister}>
+            <input
+              type="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit">회원가입</button>
+          </form>
+        </div>
+      )}
+
+      {isLoggedIn ? (
+        <main className="app-main">
+          <Calendar 
+            events={events} 
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            onAddEvent={() => {
+              setEditingEvent(null);
+              setShowEventForm(true);
+            }}
+          />
+          <div className="sidebar">
+            <div className="tab-navigation">
+              <button 
+                className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
+                onClick={() => setActiveTab('events')}
+              >
+                일정 목록
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'chatbot' ? 'active' : ''}`}
+                onClick={() => setActiveTab('chatbot')}
+              >
+                챗봇
+              </button>
+            </div>
+
+            {activeTab === 'events' ? (
+              <>
+                <EventList 
+                  events={events.filter(event => {
+                    const eventDate = new Date(event.date);
+                    return isSameDay(eventDate, selectedDate);
+                  })}
+                  onDelete={deleteEvent}
+                  onEdit={editEvent}
+                />
+                {showEventForm && (
+                  <EventForm 
+                    selectedDate={selectedDate}
+                    onSave={addEvent}
+                    onCancel={() => {
+                      setShowEventForm(false);
+                      setEditingEvent(null);
+                    }}
+                    event={editingEvent}
+                  />
+                )}
+                {!showEventForm && (
+                  <button 
+                    className="add-event-button"
+                    onClick={() => {
+                      setEditingEvent(null);
+                      setShowEventForm(true);
+                    }}
+                  >
+                    일정 추가하기
+                  </button>
+                )}
+              </>
+            ) : (
+              <Chatbot onSave={addEvent} />
+            )}
+          </div>
+        </main>
+      ) : (
+        <div className="welcome-message">
+          <h2>로그인하여 캘린더와 챗봇 기능을 이용해보세요!</h2>
+        </div>
+      )}
     </div>
   );
 }

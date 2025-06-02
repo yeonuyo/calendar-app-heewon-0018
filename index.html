@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학사일정 및 과제 관리 캘린더</title>
+    <title>과제 일정 관리 캘린더</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app">
         <header class="app-header">
-            <h1>학사일정 및 과제 관리 캘린더</h1>
+            <h1>과제 일정 관리 캘린더</h1>
+            <div class="header-buttons">
+                <button class="header-button add-event-button" id="add-event-btn">일정 추가</button>
+                <button class="header-button chatbot-button" id="chatbot-tab">챗봇으로 추가</button>
+                <button class="header-button new-task-button" id="new-task-btn">새 과제 추가</button>
+            </div>
         </header>
         
         <main class="app-main">
@@ -36,75 +41,8 @@
             </div>
             
             <div class="sidebar">
-                <!-- Chatbot Tab Navigation -->
-                <div class="tab-navigation">
-                    <button class="tab-button active" id="events-tab">일정 목록</button>
-                    <button class="tab-button" id="chatbot-tab">과제 도우미</button>
-                </div>
-                
-                <!-- Events Tab Content -->
-                <div class="tab-content active" id="events-content">
-                    <div class="event-list" id="event-list">
-                        <h3>선택한 날짜의 일정</h3>
-                        <div id="event-container">
-                            <p class="no-events">이 날짜에 등록된 일정이 없습니다.</p>
-                        </div>
-                    </div>
-                    
-                    <button class="add-event-button" id="add-event-btn">일정 추가하기</button>
-                </div>
-                
-                <!-- Chatbot Tab Content -->
-                <div class="tab-content" id="chatbot-content">
-                    <div class="chatbot-container">
-                        <div class="chatbot-header">
-                            <h3>🤖 과제 도우미</h3>
-                            <p class="chatbot-description">과제 안내문을 붙여넣으면 자동으로 정보를 추출해드려요!</p>
-                        </div>
-                        
-                        <div class="chatbot-messages" id="chatbot-messages">
-                            <div class="bot-message">
-                                <div class="message-content">
-                                    안녕하세요! 과제 안내문을 아래에 붙여넣어 주세요. 과제명, 마감일, 배점, 제출장소 등의 정보를 자동으로 추출해드릴게요.
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="chatbot-input-container">
-                            <textarea 
-                                id="chatbot-input" 
-                                placeholder="과제 안내문을 여기에 붙여넣어 주세요..."
-                                rows="4"
-                            ></textarea>
-                            <button id="chatbot-send" class="chatbot-send-button">분석하기</button>
-                        </div>
-                        
-                        <div class="extracted-info hidden" id="extracted-info">
-                            <h4>추출된 정보</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <label>과제명:</label>
-                                    <span id="extracted-title">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <label>마감일:</label>
-                                    <span id="extracted-deadline">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <label>배점:</label>
-                                    <span id="extracted-points">-</span>
-                                </div>
-                                <div class="info-item">
-                                    <label>제출장소:</label>
-                                    <span id="extracted-location">-</span>
-                                </div>
-                            </div>
-                            <div class="extracted-actions">
-                                <button id="save-extracted" class="save-extracted-button">캘린더에 저장</button>
-                                <button id="edit-extracted" class="edit-extracted-button">수정 후 저장</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="event-list" id="event-container">
+                    <!-- Events will be listed here -->
                 </div>
                 
                 <form class="event-form hidden" id="event-form">
@@ -163,6 +101,56 @@
                         <button type="submit" class="save-button">저장</button>
                     </div>
                 </form>
+                
+                <div class="chatbot-container hidden" id="chatbot-container">
+                    <div class="chatbot-header">
+                        <h3>🤖 과제 도우미</h3>
+                        <p class="chatbot-description">과제 안내문을 붙여넣으면 자동으로 정보를 추출해드려요!</p>
+                    </div>
+                    
+                    <div class="chatbot-messages" id="chatbot-messages">
+                        <div class="bot-message">
+                            <div class="message-content">
+                                안녕하세요! 과제 안내문을 아래에 붙여넣어 주세요.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chatbot-input-container">
+                        <textarea 
+                            id="chatbot-input" 
+                            placeholder="과제 안내문을 여기에 붙여넣어 주세요..."
+                            rows="4"
+                        ></textarea>
+                        <button id="chatbot-send" class="chatbot-send-button">분석하기</button>
+                    </div>
+                    
+                    <div class="extracted-info hidden" id="extracted-info">
+                        <h4>추출된 정보</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>과제명:</label>
+                                <span id="extracted-title">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>마감일:</label>
+                                <span id="extracted-deadline">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>배점:</label>
+                                <span id="extracted-points">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>제출장소:</label>
+                                <span id="extracted-location">-</span>
+                            </div>
+                        </div>
+                        <div class="extracted-actions">
+                            <button id="save-extracted" class="save-extracted-button">캘린더에 저장</button>
+                            <button id="edit-extracted" class="edit-extracted-button">수정 후 저장</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

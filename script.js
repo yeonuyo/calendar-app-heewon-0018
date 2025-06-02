@@ -3,6 +3,7 @@ let events = [];
 let selectedDate = new Date();
 let currentMonth = new Date();
 let editingEvent = null;
+let notificationSystem = null;
 
 // Event types and their labels
 const EVENT_TYPES = {
@@ -38,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadEvents();
     updateCalendar();
     updateEventList();
+    
+    // 알림 시스템 초기화
+    notificationSystem = new NotificationSystem();
 });
 
 // Initialize calendar
@@ -259,25 +263,39 @@ function clearForm() {
 function saveEvent(e) {
     e.preventDefault();
     
+    const form = document.getElementById('event-form');
+    const formData = new FormData(form);
+    
     const eventData = {
-        id: editingEvent ? editingEvent.id : Date.now().toString(),
-        title: document.getElementById('title').value,
-        type: document.getElementById('type').value,
-        date: new Date(document.getElementById('date').value + 'T' + document.getElementById('time').value),
-        time: document.getElementById('time').value,
-        endTime: document.getElementById('end-time').value,
-        priority: document.getElementById('priority').value,
-        description: document.getElementById('description').value
+        id: editingEvent ? editingEvent.id : Date.now(),
+        title: formData.get('title'),
+        type: formData.get('type'),
+        date: formData.get('date'),
+        time: formData.get('time'),
+        endTime: formData.get('end-time'),
+        priority: formData.get('priority'),
+        description: formData.get('description'),
+        color: editingEvent ? editingEvent.color : null
     };
     
+    // 분석 및 우선순위 계산
+    const analysis = analyzeAssignment(eventData.title + ' ' + eventData.description);
+    eventData.difficulty = analysis.difficulty;
+    eventData.estimatedHours = analysis.estimatedHours;
+    eventData.priority = calculatePriority(eventData);
+    
+    // 체크리스트 생성
+    const checklist = generateChecklist(eventData.type);
+    localStorage.setItem(`checklist-${eventData.id}`, JSON.stringify(
+        checklist.map(task => ({ text: task, completed: false }))
+    ));
+    
     if (editingEvent) {
-        // Update existing event
         const index = events.findIndex(e => e.id === editingEvent.id);
         if (index !== -1) {
-            events[index] = eventData;
+            events[index] = { ...events[index], ...eventData };
         }
     } else {
-        // Add new event
         events.push(eventData);
     }
     
@@ -285,6 +303,12 @@ function saveEvent(e) {
     updateCalendar();
     updateEventList();
     hideEventForm();
+    editingEvent = null;
+    
+    // 알림 설정
+    if (notificationSystem) {
+        notificationSystem.createReminder(eventData);
+    }
 }
 
 function deleteEvent(id) {
@@ -304,13 +328,27 @@ function editEvent(event) {
 function updateEventList() {
     const dayEvents = getDayEvents(selectedDate);
     const eventContainer = document.getElementById('event-container');
+    const dateStr = formatDateKorean(selectedDate);
+    
+    const header = document.createElement('div');
+    header.className = 'event-list-header';
+    header.innerHTML = `
+        <h3>${dateStr}</h3>
+        <span class="event-count">${dayEvents.length}개의 과제</span>
+    `;
     
     if (dayEvents.length === 0) {
-        eventContainer.innerHTML = '<p class="no-events">이 날짜에 등록된 일정이 없습니다.</p>';
+        eventContainer.innerHTML = '';
+        eventContainer.appendChild(header);
+        const noEvents = document.createElement('p');
+        noEvents.className = 'no-events';
+        noEvents.textContent = '이 날짜에 등록된 일정이 없습니다.';
+        eventContainer.appendChild(noEvents);
         return;
     }
     
     eventContainer.innerHTML = '';
+    eventContainer.appendChild(header);
     
     dayEvents.forEach(event => {
         const eventElement = createEventElement(event);
@@ -322,11 +360,14 @@ function createEventElement(event) {
     const eventDiv = document.createElement('div');
     eventDiv.className = `event-item priority-${event.priority}`;
     
+    const progress = trackProgress(event);
+    const status = progress.isDelayed ? 'delayed' : 'on-track';
+    const statusText = progress.isDelayed ? '지연' : '정상';
+    
     eventDiv.innerHTML = `
-        <div class="event-header">
-            <span class="event-type">
-                ${EVENT_TYPE_ICONS[event.type] || '📌'} ${EVENT_TYPES[event.type] || '일정'}
-            </span>
+        <div class="event-status">
+            <span class="status-dot status-${status}"></span>
+            <span>${statusText}</span>
             <div class="event-actions">
                 <button class="edit-button" onclick="editEvent(${JSON.stringify(event).replace(/"/g, '&quot;')})">
                     ✏️
@@ -337,10 +378,16 @@ function createEventElement(event) {
             </div>
         </div>
         <h4 class="event-title">${event.title}</h4>
-        <div class="event-time">
-            ${formatDateKorean(new Date(event.date))} ${event.time} - ${event.endTime}
+        <div class="event-meta">
+            <span>${event.time} - ${event.endTime}</span>
+            ${event.type === 'assignment' ? 
+                `<span class="event-points">예상 소요: ${event.estimatedHours}시간</span>` : 
+                ''}
         </div>
-        ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
+        <div class="progress-bar">
+            <div class="progress" style="width: ${progress.currentProgress}%"></div>
+            <div class="expected-progress" style="left: ${progress.expectedProgress}%"></div>
+        </div>
     `;
     
     return eventDiv;
@@ -514,43 +561,50 @@ function displayExtractedInfo(extracted) {
 }
 
 function saveExtractedEvent() {
-    if (!extractedData) return;
+    const title = document.getElementById('extracted-title').textContent;
+    const deadline = document.getElementById('extracted-deadline').textContent;
+    const points = document.getElementById('extracted-points').textContent;
+    const location = document.getElementById('extracted-location').textContent;
+    const originalText = document.getElementById('chatbot-messages').lastElementChild.previousElementSibling.querySelector('.message-content').textContent;
     
-    // Convert deadline to date
-    let deadlineDate = parseDeadlineDate(extractedData.deadline);
+    const deadlineDate = parseDeadlineDate(deadline);
     if (!deadlineDate) {
-        deadlineDate = new Date();
-        deadlineDate.setDate(deadlineDate.getDate() + 7); // Default to 1 week from now
+        alert('마감일을 파싱할 수 없습니다.');
+        return;
     }
     
     const eventData = {
-        id: Date.now().toString(),
-        title: extractedData.title,
+        id: Date.now(),
+        title: title,
         type: 'assignment',
-        date: deadlineDate,
+        date: formatDate(deadlineDate),
         time: '23:59',
         endTime: '23:59',
         priority: 'high',
-        description: `배점: ${extractedData.points}\n제출장소: ${extractedData.location}`
+        description: `[과제 정보]\n` +
+                    `배점: ${points}\n` +
+                    `제출장소: ${location}\n\n` +
+                    `[원본 과제 내용]\n${originalText}`,
     };
     
     events.push(eventData);
     saveEvents();
+    
+    // 해당 날짜의 월로 이동
+    currentMonth = new Date(deadlineDate);
+    selectedDate = new Date(deadlineDate);
+    
+    // 캘린더와 이벤트 목록 업데이트
     updateCalendar();
+    updateMonthDisplay();
+    
+    // 일정 목록 탭으로 전환
+    switchTab('events');
     updateEventList();
     
-    // Clear extracted info
+    // 추출된 정보 숨기기
     document.getElementById('extracted-info').classList.add('hidden');
-    extractedData = null;
-    
-    // Show success message
-    addChatMessage('✅ 과제가 성공적으로 캘린더에 저장되었습니다!', 'bot');
-    
-    // Switch to events tab to show the added event
-    switchTab('events');
-    
-    // Select the date of the added event
-    selectDate(deadlineDate);
+    document.getElementById('chatbot-input').value = '';
 }
 
 function editExtractedEvent() {
@@ -638,5 +692,153 @@ function loadEvents() {
     const savedEvents = localStorage.getItem('calendar-events');
     if (savedEvents) {
         events = JSON.parse(savedEvents);
+    }
+}
+
+// 새로운 분석 기능
+function analyzeAssignment(text) {
+    const keywords = {
+        high: ['프로젝트', '보고서', '논문', '기말', '발표'],
+        medium: ['레포트', '요약', '조사', '실습'],
+        low: ['퀴즈', '연습', '간단한']
+    };
+    
+    let difficulty = 'medium';
+    let estimatedHours = 2;
+    
+    text = text.toLowerCase();
+    
+    if (keywords.high.some(word => text.includes(word))) {
+        difficulty = 'high';
+        estimatedHours = 5;
+    } else if (keywords.low.some(word => text.includes(word))) {
+        difficulty = 'low';
+        estimatedHours = 1;
+    }
+    
+    return { difficulty, estimatedHours };
+}
+
+// 작업일 계산 기능
+function calculateWorkingDays(deadline) {
+    const today = new Date();
+    const diff = deadline - today;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    let workingDays = days;
+    let currentDate = new Date(today);
+    
+    for (let i = 0; i < days; i++) {
+        currentDate.setDate(currentDate.getDate() + 1);
+        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+            workingDays--;
+        }
+    }
+    
+    return workingDays;
+}
+
+// 우선순위 계산 기능
+function calculatePriority(assignment) {
+    const now = new Date();
+    const deadline = new Date(assignment.date);
+    const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+    
+    // 기본 점수 계산
+    let score = 0;
+    
+    // 마감일 가중치 (40%)
+    score += (10 - Math.min(daysLeft, 10)) * 0.4;
+    
+    // 과제 타입 가중치 (30%)
+    if (assignment.type === 'exam') score += 0.3;
+    else if (assignment.type === 'assignment') score += 0.25;
+    else score += 0.15;
+    
+    // 설명 길이 가중치 (30%)
+    const descriptionLength = (assignment.description || '').length;
+    score += Math.min(descriptionLength / 1000, 1) * 0.3;
+    
+    return score > 0.7 ? 'high' : score > 0.4 ? 'medium' : 'low';
+}
+
+// 체크리스트 생성 기능
+function generateChecklist(type) {
+    const templates = {
+        assignment: [
+            '자료 조사 및 수집',
+            '개요 작성',
+            '초안 작성',
+            '검토 및 수정',
+            '최종 제출'
+        ],
+        exam: [
+            '학습 계획 수립',
+            '주요 내용 정리',
+            '연습 문제 풀이',
+            '오답 노트 작성',
+            '최종 복습'
+        ],
+        default: [
+            '계획 수립',
+            '준비',
+            '실행',
+            '검토',
+            '완료'
+        ]
+    };
+    
+    return templates[type] || templates.default;
+}
+
+// 진행 상황 추적 기능
+function trackProgress(assignment) {
+    const checklist = JSON.parse(localStorage.getItem(`checklist-${assignment.id}`) || '[]');
+    const completedTasks = checklist.filter(task => task.completed).length;
+    const totalTasks = checklist.length || 1;
+    
+    const progress = (completedTasks / totalTasks) * 100;
+    const deadline = new Date(assignment.date);
+    const totalDays = calculateWorkingDays(deadline);
+    
+    const expectedProgress = Math.max(0, Math.min(100, 
+        (1 - (totalDays / (totalDays + 1))) * 100
+    ));
+    
+    return {
+        currentProgress: progress,
+        expectedProgress,
+        isDelayed: progress < expectedProgress,
+        warningLevel: progress < expectedProgress - 20 ? 'high' : 'low'
+    };
+}
+
+// 알림 시스템
+class NotificationSystem {
+    constructor() {
+        this.initialized = false;
+        this.setup();
+    }
+    
+    async setup() {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            this.initialized = permission === 'granted';
+        }
+    }
+    
+    createReminder(assignment) {
+        if (!this.initialized) return;
+        
+        const deadline = new Date(assignment.date);
+        const now = new Date();
+        
+        // 마감 24시간 전 알림
+        if (deadline - now <= 24 * 60 * 60 * 1000) {
+            new Notification('과제 마감 임박!', {
+                body: `${assignment.title}이(가) 24시간 내에 마감됩니다.`,
+                icon: '/favicon.ico'
+            });
+        }
     }
 }

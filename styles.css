@@ -19,34 +19,70 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
 }
 
 .app-header {
-    background-color: #2c3e50;
+    background-color: #ffffff;
+    color: #333;
+    padding: 1rem 2rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.header-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-event-button {
+    background-color: #e74c3c;
     color: white;
-    padding: 1rem;
-    text-align: center;
+}
+
+.chatbot-button {
+    background-color: #6c5ce7;
+    color: white;
+}
+
+.new-task-button {
+    background-color: #3498db;
+    color: white;
 }
 
 .app-main {
     display: flex;
     flex: 1;
-    padding: 1rem;
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .app-main {
-        flex-direction: column;
-    }
+    padding: 2rem;
+    gap: 2rem;
+    background-color: #f8f9fa;
 }
 
 /* Calendar Styles */
 .calendar {
-    flex: 1;
+    flex: 2;
     background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -54,95 +90,221 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #3498db;
-    color: white;
-    padding: 1rem;
+    padding: 1.5rem;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+}
+
+.calendar-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
 }
 
 .calendar-header button {
     background: none;
     border: none;
-    color: white;
-    font-size: 1.5rem;
+    color: #666;
+    font-size: 1.2rem;
     cursor: pointer;
-    padding: 0 10px;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-header button:hover {
+    background-color: #f0f0f0;
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+    background-color: white;
 }
 
 .day-name {
     text-align: center;
     padding: 0.5rem;
-    font-weight: bold;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
 }
 
 .calendar-body {
-    display: flex;
-    flex-direction: column;
+    padding: 0 1rem 1rem 1rem;
 }
 
 .calendar-row {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
 }
 
 .calendar-cell {
-    position: relative;
-    height: 100px;
-    border: 1px solid #dee2e6;
-    padding: 5px;
+    aspect-ratio: 1;
+    border: none;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.5rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .calendar-cell:hover {
-    background-color: #f1f1f1;
+    background-color: #f0f0f0;
 }
 
 .calendar-cell .number {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.25rem;
 }
 
 .calendar-cell.disabled {
-    color: #adb5bd;
-    background-color: #f8f9fa;
+    background-color: white;
+}
+
+.calendar-cell.disabled .number {
+    color: #ccc;
 }
 
 .calendar-cell.selected {
     background-color: #e3f2fd;
-    border: 2px solid #2196f3;
 }
 
 .calendar-cell.has-events .number {
     color: #3498db;
+    font-weight: 600;
 }
 
-.event-dots {
+/* Event List Styles */
+.sidebar {
+    flex: 1;
+    min-width: 300px;
+}
+
+.event-list {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-list-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
-    margin-top: 3px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
-.event-dot {
+.event-list-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.event-count {
+    background-color: #3498db;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.event-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    transition: all 0.2s;
+}
+
+.event-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.event-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #3498db;
-    display: inline-block;
 }
 
-.more-events {
-    font-size: 10px;
-    color: #6c757d;
-    margin-left: 2px;
+.status-pending {
+    background-color: #f39c12;
+}
+
+.status-completed {
+    background-color: #2ecc71;
+}
+
+.event-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.event-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.event-points {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .app-main {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .calendar {
+        border-radius: 8px;
+    }
+
+    .calendar-cell {
+        aspect-ratio: auto;
+        height: 60px;
+    }
+
+    .sidebar {
+        min-width: 100%;
+    }
+
+    .header-buttons {
+        gap: 0.5rem;
+    }
+
+    .header-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
 }
 
 /* Sidebar */
@@ -608,16 +770,58 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .calendar-cell {
-        height: 70px;
-    }
-    
-    .form-row {
+    .app-main {
         flex-direction: column;
+        padding: 0.5rem;
     }
-    
+
+    .calendar {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .calendar-cell {
+        height: 60px;
+        padding: 2px;
+    }
+
+    .calendar-cell .number {
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+
+    .event-dots {
+        gap: 1px;
+    }
+
+    .event-dot {
+        width: 6px;
+        height: 6px;
+    }
+
     .sidebar {
         flex: none;
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0.5rem;
+    }
+
+    .calendar-header {
+        padding: 0.5rem;
+    }
+
+    .calendar-days .day-name {
+        padding: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .more-events {
+        font-size: 8px;
+    }
+
+    .form-row {
+        flex-direction: column;
     }
     
     .chatbot-container {
@@ -637,5 +841,185 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
+    }
+}
+
+/* Progress Bar Styles */
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background-color: #f0f0f0;
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.expected-progress {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #2196F3;
+    transform: translateX(-50%);
+}
+
+/* Status Styles */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-on-track {
+    background-color: #4CAF50;
+}
+
+.status-delayed {
+    background-color: #f44336;
+}
+
+/* Event Points Badge */
+.event-points {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Priority Indicators */
+.priority-high {
+    border-left: 4px solid #f44336;
+}
+
+.priority-medium {
+    border-left: 4px solid #ff9800;
+}
+
+.priority-low {
+    border-left: 4px solid #4CAF50;
+}
+
+/* Checklist Styles */
+.checklist {
+    margin-top: 1rem;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.checklist-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+.checklist-item.completed span {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #f44336;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Analysis Section */
+.analysis-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.analysis-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.analysis-value {
+    font-weight: 500;
+}
+
+/* Difficulty Indicator */
+.difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.difficulty-high {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.difficulty-medium {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.difficulty-low {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .progress-bar {
+        height: 3px;
+    }
+    
+    .event-points {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .checklist-item {
+        font-size: 0.9rem;
+    }
+    
+    .analysis-section {
+        padding: 0.75rem;
     }
 }
